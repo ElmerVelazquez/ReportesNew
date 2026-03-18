@@ -56,6 +56,9 @@ import { ReactComponent as AlertHexaIcon } from "./alert-hexa.svg?react";
 import { ReactComponent as ErrorHexaIcon } from "./info-hexa.svg?react";
 import { ReactComponent as DocumentsIcon } from "./documents.svg?react";
 import { ReactComponent as EquipmentsIcon } from "./equipments.svg?react";
+import { ReactComponent as AscIcon } from "./sort-asc.svg?react";
+import { ReactComponent as DescIcon } from "./sort-desc.svg?react";
+import { ReactComponent as UnsortedIcon } from "./sort-none.svg?react";
 
 export {
   ErrorHexaIcon,
@@ -115,5 +118,8 @@ export {
   AngleLeftIcon,
   AngleRightIcon,
   DocumentsIcon,
-  EquipmentsIcon
+  EquipmentsIcon,
+  AscIcon,
+  DescIcon,
+  UnsortedIcon
 };

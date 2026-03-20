@@ -19,6 +19,7 @@ import AppLayout from "./layout/AppLayout";
 import { ScrollToTop } from "./components/common/ScrollToTop";
 import Home from "./pages/Dashboard/Home";
 import Equipments from "./pages/Equipments/Equipments";
+import Documents from "./pages/Documents";
 
 export default function App() {
   return (
@@ -37,6 +38,9 @@ export default function App() {
 
             {/* Equipments */}
             <Route path="/equipments" element={<Equipments />} />
+
+            {/* Documents */}
+            <Route path="/documents" element={<Documents />} />
 
             {/* Forms */}
             <Route path="/form-elements" element={<FormElements />} />

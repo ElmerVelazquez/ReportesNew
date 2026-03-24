@@ -1,9 +1,12 @@
+import { use, useEffect, useState } from "react";
 import Badge from "../../ui/badge/Badge";
 import { BadgeColor } from "../../ui/badge/Badge";
 import StandardTable from "@/components/ui/table/StandardTable";
 import {
   ColumnDef,
 } from "@tanstack/react-table";
+import { getEquipments } from "@/api/index";
+import { get } from "node:http";
 
 
 type itemProps = {
@@ -15,19 +18,28 @@ type itemProps = {
   estatus: "En servicio" | "Fuera de servicio" | "Disponible",
   nota: string,
 }; 
-const data: itemProps[] = 
- [
-  {
-    id: 1,
-    equipo: "Laptop",
-    marca: "Dell",
-    modelo: "XPS 13",
-    serial: "xps13-2021-001",
-    estatus: "En servicio",
-    nota: "En buen estado"
-  }
+// const data: itemProps[] = 
+//  [
+//   {
+//     id: 1,
+//     equipo: "Laptop",
+//     marca: "Dell",
+//     modelo: "XPS 13",
+//     serial: "xps13-2021-001",
+//     estatus: "En servicio",
+//     nota: "En buen estado"
+//   },
+//   {
+//     id: 2,
+//     equipo: "Laptop",
+//     marca: "Dell",
+//     modelo: "XPS 123",
+//     serial: "xps13-2021-001",
+//     estatus: "En servicio",
+//     nota: "En buen estado"
+//   }
 
-]
+// ]
 
 const columns: ColumnDef<itemProps>[] = [
   { accessorKey: "equipo", header: "Equipo"},
@@ -45,11 +57,25 @@ const columns: ColumnDef<itemProps>[] = [
   },
   { accessorKey: "nota", header: "Nota" },
 ];
+interface EquipmentTableProps {
+  selectedRowId: string | null;
+  onRowSelect: (id: string | null) => void;
 
-export default function EquipmentTable() {
-  
+}
+export default function EquipmentTable({ selectedRowId, onRowSelect }: EquipmentTableProps) {
+    const [data, setData] = useState<itemProps[]>([]);
+    useEffect(() => {
+             getEquipments()
+            .then((equipments) => {
+                setData(equipments);
+            })
+            .catch((error) => {
+                console.error("Error fetching equipments:", error);
+            });
+    }, []);
 
-  return (
-      <StandardTable<itemProps> columns={columns} data={data} />
+
+  return (  
+      <StandardTable<itemProps>  selectRowId={selectedRowId} onRowSelect={onRowSelect} columns={columns} data={data} />
   );
 };

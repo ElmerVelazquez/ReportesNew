@@ -13,12 +13,12 @@ import {AscIcon, DescIcon, UnsortedIcon} from "@/icons";
 
 interface StandardTableProps<TData> {
   columns: ColumnDef<TData, unknown>[]; // definición de columnas
-  data: TData[];                    // filas de datos
+  data: TData[];
+  onRowSelect: (id: string | null) => void; // función para manejar la selección de filas
+  selectRowId: string | null; // ID de la fila seleccionada
 }
-
-export default function StandardTable<TData>({columns, data}: StandardTableProps<TData>) {
+export default function StandardTable<TData>({columns, data, onRowSelect, selectRowId}: StandardTableProps<TData>) {
   const [sorting, setSorting] = useState<SortingState>([]);
-
   const [globalFilter, setGlobalFilter] = useState("");
 
   const table = useReactTable({
@@ -65,7 +65,11 @@ export default function StandardTable<TData>({columns, data}: StandardTableProps
                 </thead>
                 <tbody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
                     {table.getRowModel().rows.map((row) => (
-                        <tr key={row.id} className="hover:bg-gray-600 transition-colors">
+                        <tr 
+                            key={row.id}
+                            onClick={() => onRowSelect(selectRowId === row.id ? null : row.id)} 
+                            className={`hover:bg-gray-600 transition-color cursor-pointer ${selectRowId === row.id ? 'bg-gray-200 dark:bg-gray-600' : ''}`}   
+                        >
                         {row.getVisibleCells().map((cell) => (
                             <td
                             key={cell.id}

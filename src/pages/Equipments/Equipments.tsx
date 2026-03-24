@@ -9,13 +9,49 @@ import { Modal } from "../../components/ui/modal";
 import { useModal } from "../../hooks/useModal";
 import Input from "@/components/form/input/InputField";
 import Radio from "@/components/form/input/Radio";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import Select from "@/components/form/Select";
+import TextArea from "@/components/form/input/TextArea";
+import { getEquipmentTypes } from "@/api/EquipmentType";
+
+
+// Define el tipo de cada elemento
+interface EquipmentOption {
+  id: string; // depende de tu API
+  name: string;
+}
+
+// Define el tipo de equipmentTypes
+interface EquipmentTypes {
+  data: EquipmentOption[]; // o el tipo que corresponda a tu API
+}
 
 
 export default function Equipments() {
   const { isOpen, openModal, closeModal } = useModal();
   const [selectedOption, setSelectedOption] = useState("1");
+  const [equipmentTypes, setEquipmentTypes] = useState<EquipmentTypes | null>(null);
 
+  
+    useEffect(() => {
+             getEquipmentTypes()
+            .then((equipmentTypes) => {
+              console.log("Fetched equipment types:", equipmentTypes);
+              console.log(equipmentTypes.data);
+                setEquipmentTypes(equipmentTypes);
+                
+            })
+            .catch((error) => {
+                console.error("Error fetching equipment types:", error);
+            });
+    }, []);
+
+const options = equipmentTypes?.data.map((option: EquipmentOption) => ({
+  value: option.id,
+  label: option.name,
+})) ?? [];
+
+const [selectedRowId, setSelectedRowId] = useState<string | null>(null);
 
   return (
     <>
@@ -30,55 +66,23 @@ export default function Equipments() {
                 {"Agregar Equipo"}
               </h5>
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                Plan your next big moment: schedule or edit an event to stay on
-                track
+                {selectedRowId !== null ? 'Introduce los datos del equipo seleccionado' : 'Introduce los datos del nuevo equipo'}
               </p>
             </div>
             <div className="mt-8">
               <div>
                 <div>
                   <div className="flex gap-6 mb-5">
-                    <Radio id="rad1" name="rad1" label="Equipo" value="1" checked={selectedOption === "1"} onChange={() => setSelectedOption("1")} />
-                    <Radio id="rad2" name="rad1" label="Event Title" value="2" checked={selectedOption === "2"} onChange={() => setSelectedOption("2")} />
+                    <Radio id="rad1" name="rad1" label="Disponible" value="1" checked={selectedOption === "1"} onChange={() => setSelectedOption("1")} />
+                    <Radio id="rad2" name="rad1" label="En servicio" value="2" checked={selectedOption === "2"} onChange={() => setSelectedOption("2")} />
+                    <Radio id="rad3" name="rad1" label="Fuera de servicio" value="3" checked={selectedOption === "3"} onChange={() => setSelectedOption("3")} />
                   </div>
-
-                  <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                    Event Title
-                  </label>
-                  <Input
-                  className="mb-4"
-                  placeholder="Enter event title"/>
-                  <input
-                    id="event-title"
-                    type="text"
-                    value={"titulo"}
-                    className="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
-                  />
-                </div>
-              </div>
-              <div className="mt-6">
-                <label className="block mb-4 text-sm font-medium text-gray-700 dark:text-gray-400">
-                  Event Color
-                </label>
-                <div className="flex flex-wrap items-center gap-4 sm:gap-5">
-
-                </div>
-              </div>
-
-              <div className="mt-6">
-                <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                  Enter Start Date
-                </label>
-                <div className="relative">
-                 
-                </div>
-              </div>
-
-              <div className="mt-6">
-                <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                  Enter End Date
-                </label>
-                <div className="relative">
+                  <Select options={options} placeholder="Tipo de equipo" onChange={() => {}} className="dark:bg-dark-900 mb-4"/>
+                  <Select options={options} placeholder="Marca" onChange={() => {}} className="dark:bg-dark-900 mb-4"/>
+                  <Select options={options} placeholder="Modelo" onChange={() => {}} className="dark:bg-dark-900 mb-4"/>
+                  <Input className="mb-4" placeholder="Serial"/>
+  
+                  <TextArea placeholder="Nota" rows={4} className="mb-4"  value=""/>
                   
                 </div>
               </div>
@@ -93,9 +97,9 @@ export default function Equipments() {
               </button>
               <button
                 type="button"
-                className="btn btn-success btn-update-event flex w-full justify-center rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600 sm:w-auto"
+                className={`flex w-full justify-center rounded-lg  px-4 py-2.5 text-sm font-medium text-white  sm:w-auto ${selectedRowId !== null ? 'bg-green-500 hover:bg-green-600' : 'bg-brand-500 hover:bg-brand-600'}`}
               >
-                Add
+                {selectedRowId !== null ? 'Update' : 'Add'}
               </button>
             </div>
           </div>
@@ -108,13 +112,19 @@ export default function Equipments() {
       
       <PageBreadcrumb pageTitle="Equipments" />
       <div className="flex justify-end gap-3 text-xs pb-3" >
-          <Button onClick={openModal} startIcon={<AddIcon />} variant="primary" size="sm"><span className="text-white">Add</span></Button>
+        <Button 
+          onClick={openModal} 
+          startIcon={<AddIcon />} 
+          variant={selectedRowId !== null ? 'secondary' : 'primary'} 
+          size="sm">
+          <span className="text-white">{selectedRowId !== null ? 'Edit' : 'Add'}</span>
+        </Button>
           <Button startIcon={<TrashBinIcon />} variant="outline" size="sm"><span className="text-red-500">Delete</span></Button>
       </div>
       <div className="space-y-6">
         <ComponentCard title="Lists of Equipments">
 
-          <EquipmentTable />
+          <EquipmentTable selectedRowId={selectedRowId} onRowSelect={setSelectedRowId} />
         </ComponentCard>
       </div>
     </>

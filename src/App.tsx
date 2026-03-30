@@ -20,10 +20,14 @@ import { ScrollToTop } from "./components/common/ScrollToTop";
 import Home from "./pages/Dashboard/Home";
 import Equipments from "./pages/Equipments/Equipments";
 import Documents from "./pages/Documents";
+import Brands from "./pages/Equipments/Brands";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 export default function App() {
+  const queryClient = new QueryClient();
   return (
     <>
+      <QueryClientProvider client={queryClient}>
       <Router>
         <ScrollToTop />
         <Routes>
@@ -38,6 +42,9 @@ export default function App() {
 
             {/* Equipments */}
             <Route path="/equipments" element={<Equipments />} />
+
+            {/* Brands */}
+            <Route path="/brands" element={<Brands />} />
 
             {/* Documents */}
             <Route path="/documents" element={<Documents />} />
@@ -69,6 +76,7 @@ export default function App() {
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>
+      </QueryClientProvider>
     </>
   );
 }

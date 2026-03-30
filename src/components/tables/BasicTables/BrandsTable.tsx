@@ -2,9 +2,12 @@ import {
   ColumnDef,
 } from "@tanstack/react-table";
 import StandardTable from "@/components/ui/table/StandardTable";
-import { useEffect, useState } from "react";
 import { getEquipmentBrand } from "@/api/EquipmentBrand";
 import { getEquipmentTModel } from "@/api/EquipmentModel";
+import { useQuery } from "@tanstack/react-query";
+import { AddIcon } from "@/icons/index";
+import { TrashBinIcon } from "@/icons/index";
+import Button from "@/components/ui/button/Button"; 
 
 
 type marca = {
@@ -58,31 +61,51 @@ interface BrandsTableProps {
 
 }
 export default function BrandsTable({ selectedModelId, onRowSelectedModelId, selectedBrandId, onRowSelectedBrandId}: BrandsTableProps) {
-    const [dataMarca,setDataMarca]= useState<marca[]>([]);
-    const [dataModelos,setDataModelos]= useState<modelo[]>([]);
+    const { data: dataMarca = [], isLoading: loadingMarcas, isError: errorMarcas } = useQuery({
+      queryKey: ["EquipmentBrands"],
+      queryFn: getEquipmentBrand,
+      select: (res) => res.data,
+      staleTime: 1000 * 60, // 1 minuto
+    });
+
+    const { data: dataModelos = [], isLoading: loadingModelos, isError: errorModelos } = useQuery({
+      queryKey: ["EquipmentModels"],
+      queryFn: getEquipmentTModel,
+      select: (res) => res.data,
+      staleTime: 1000 * 60, // 1 minuto
+    });
     const modelosFiltrados = selectedBrandId
-    ? dataModelos.filter(m => m.brand.id === Number(selectedBrandId)+1)
+    ? dataModelos.filter((m: modelo) => m.brand.id === Number(selectedBrandId)+1)
     : dataModelos;
 
-    useEffect(()=>{
-        const loadData = async () => {
-            const [brandsRes, modelsRes] = await Promise.all([
-            getEquipmentBrand(),
-            getEquipmentTModel(),
-            ]);
-            setDataMarca(brandsRes.data);
-            setDataModelos(modelsRes.data);
-        };
-        loadData();
-    },[])
-console.log("modelos filtrados", dataModelos);
+console.log("modelos filtrados", modelosFiltrados);
   return (
     <div className="flex gap-10 justify-center">
         <div className="w-full">
-            <StandardTable<marca>  selectRowId={selectedBrandId} onRowSelect={onRowSelectedBrandId} columns={columnsMarcas} data={dataMarca} />
+          <div className="flex justify-end gap-3 text-xs pb-3" >
+            <Button 
+              onClick={() => {}} 
+              startIcon={<AddIcon />} 
+              variant={'primary'} 
+              size="xs">
+              <span className="text-white">Add</span>
+            </Button>
+          </div>
+            <StandardTable<marca> deleteBtn={true} editBtn={true}  selectRowId={selectedBrandId} onRowSelect={onRowSelectedBrandId} columns={columnsMarcas} data={dataMarca} />
         </div>
         <div className="w-full">
-            <StandardTable<modelo>  selectRowId={selectedModelId} onRowSelect={onRowSelectedModelId} columns={columnsModelos} data={modelosFiltrados} />
+          <div className="flex justify-end gap-3 text-xs pb-3" >
+            <Button 
+              onClick={() => {}} 
+              startIcon={<AddIcon />} 
+              variant={selectedBrandId ? 'primary' : 'outline'} 
+              size="xs"
+              disabled={!selectedBrandId} // Deshabilitar si no hay una marca seleccionada
+              >
+              <span className="text-white">Add</span>
+            </Button>
+          </div>
+            <StandardTable<modelo> editBtn={true} deleteBtn={true}  selectRowId={selectedModelId} onRowSelect={onRowSelectedModelId} columns={columnsModelos} data={modelosFiltrados} />
         </div>
     </div>
   );

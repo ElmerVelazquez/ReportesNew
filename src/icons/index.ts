@@ -60,6 +60,7 @@ import { ReactComponent as AscIcon } from "./sort-asc.svg?react";
 import { ReactComponent as DescIcon } from "./sort-desc.svg?react";
 import { ReactComponent as UnsortedIcon } from "./sort-none.svg?react";
 import { ReactComponent as AddIcon } from "./add.svg?react";
+import { ReactComponent as EditIcon } from "./edit.svg?react";
 
 export {
   ErrorHexaIcon,
@@ -124,4 +125,5 @@ export {
   DescIcon,
   UnsortedIcon,
   AddIcon,
+  EditIcon
 };

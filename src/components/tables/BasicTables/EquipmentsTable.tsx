@@ -6,7 +6,6 @@ import {
   ColumnDef,
 } from "@tanstack/react-table";
 import { getEquipments } from "@/api/index";
-import { get } from "node:http";
 
 
 type itemProps = {

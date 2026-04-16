@@ -19,3 +19,33 @@ export const getEquipmentModelById = async (id: number) => {
         throw error;
     }
 };
+
+export const createEquipmentModel = async (model: { name: string, equipment_brand_id: number }) => {
+    try {
+        const response = await api.post("/equipment-model", model);
+        return response.data;
+    } catch (error) {
+        console.error("Error creating equipment model:", error);
+        throw error;
+    }
+};
+
+export const updateEquipmentModel = async (id: number, model: { name: string, brandId: number }) => {
+    try {
+        const response = await api.put(`/equipment-model/${id}`, model);
+        return response.data;
+    } catch (error) {
+        console.error(`Error updating equipment model with id ${id}:`, error);
+        throw error;
+    }
+};
+
+export const deleteEquipmentModel = async (id: number) => {
+    try {
+        const response = await api.delete(`/equipment-model/${id}`);
+        return response.data;
+    } catch (error) {
+        console.error(`Error deleting equipment model with id ${id}:`, error);
+        throw error;
+    }
+};

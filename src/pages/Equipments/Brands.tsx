@@ -7,6 +7,7 @@ import { useState } from "react";
 export default function Brands() {
     const [selectedBrandId, setSelectedBrandId] = useState<string | null>("0");
     const [selectedModelId, setSelectedModelId] = useState<string | null>(null);
+
     return (
         <div>
             <PageMeta

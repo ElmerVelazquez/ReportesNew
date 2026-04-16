@@ -7,6 +7,7 @@ interface AlertProps {
   showLink?: boolean; // Whether to show the "Learn More" link
   linkHref?: string; // Link URL
   linkText?: string; // Link text
+  onClick?: () => void; // Optional onClick handler for the alert
 }
 
 const Alert: React.FC<AlertProps> = ({
@@ -16,6 +17,8 @@ const Alert: React.FC<AlertProps> = ({
   showLink = false,
   linkHref = "#",
   linkText = "Learn more",
+  onClick,
+
 }) => {
   // Tailwind classes for each variant
   const variantClasses = {
@@ -113,7 +116,8 @@ const Alert: React.FC<AlertProps> = ({
 
   return (
     <div
-      className={`rounded-xl border p-4 ${variantClasses[variant].container}`}
+      onClick={onClick}
+      className={`rounded-xl border p-4 ${variantClasses[variant].container} ${onClick !== undefined ? 'cursor-pointer transition-transform duration-200 hover:scale-101' : ''}`}
     >
       <div className="flex items-start gap-3">
         <div className={`-mt-0.5 ${variantClasses[variant].icon}`}>

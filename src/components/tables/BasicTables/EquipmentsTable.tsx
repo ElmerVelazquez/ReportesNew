@@ -11,7 +11,7 @@ import { motion } from "framer-motion";
 
 
 type itemProps = {
-  id: number,
+  id: string,
   equipo: string,
   marca: string,
   modelo: string,

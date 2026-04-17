@@ -30,12 +30,12 @@ export const createEquipmentModel = async (model: { name: string, equipment_bran
     }
 };
 
-export const updateEquipmentModel = async (id: number, model: { name: string, brandId: number }) => {
+export const updateEquipmentModel = async ( model: {id: number, name: string, brandId: number }) => {
     try {
-        const response = await api.put(`/equipment-model/${id}`, model);
+        const response = await api.put(`/equipment-model/${model.id}`, model);
         return response.data;
     } catch (error) {
-        console.error(`Error updating equipment model with id ${id}:`, error);
+        console.error(`Error updating equipment model with id ${model.id}:`, error);
         throw error;
     }
 };

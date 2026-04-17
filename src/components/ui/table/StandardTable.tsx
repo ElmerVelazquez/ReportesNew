@@ -16,10 +16,10 @@ interface StandardTableProps<TData> {
   data: TData[];
   onRowSelect: (id: string | null) => void; // función para manejar la selección de filas
   selectRowId: string | null; // ID de la fila seleccionada
-  editBtn?: true | false; // Si se muestra el botón de editar
-  deleteBtn?: true | false; // Si se muestra el botón de eliminar
+  editBtn?: undefined | ((arg: string | null) => void); // Si se muestra el botón de editar
+  deleteBtn?: undefined | ((arg: string | null) => void); // Si se muestra el botón de eliminar
 }
-export default function StandardTable<TData>({columns, data, onRowSelect, selectRowId, editBtn, deleteBtn}: StandardTableProps<TData>) {
+export default function StandardTable<TData extends { id: string }>({columns, data, onRowSelect, selectRowId, editBtn, deleteBtn}: StandardTableProps<TData>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [globalFilter, setGlobalFilter] = useState("");
 
@@ -27,6 +27,7 @@ export default function StandardTable<TData>({columns, data, onRowSelect, select
     data,
     columns,
     state: { sorting, globalFilter },
+    getRowId: (row) => row.id,
     onSortingChange: setSorting,
     onGlobalFilterChange: setGlobalFilter,
     getCoreRowModel: getCoreRowModel(),
@@ -79,8 +80,8 @@ export default function StandardTable<TData>({columns, data, onRowSelect, select
                             >
                             <div>{flexRender(cell.column.columnDef.cell, cell.getContext())}</div>
                             <div className="flex">
-                                {editBtn && <button onClick={() => {}} className="text-blue-500 hover:text-blue-700"><EditIcon className="size-4" /></button>}
-                                {deleteBtn && <button onClick={()=>{}} className="text-red-500 hover:text-red-700 ml-2"><TrashBinIcon className="size-4" /></button>}
+                                {editBtn && <button onClick={() => editBtn(row.id)} className="text-blue-500 hover:text-blue-700"><EditIcon className="size-4" /></button>}
+                                {deleteBtn && <button onClick={() => deleteBtn(row.id)} className="text-red-500 hover:text-red-700 ml-2"><TrashBinIcon className="size-4" /></button>}
                             </div>
                             
                             </td>

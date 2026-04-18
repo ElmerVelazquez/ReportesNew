@@ -30,7 +30,7 @@ export const createEquipmentModel = async (model: { name: string, equipment_bran
     }
 };
 
-export const updateEquipmentModel = async ( model: {id: number, name: string, brandId: number }) => {
+export const updateEquipmentModel = async ( model: {id: number, name: string}) => {
     try {
         const response = await api.put(`/equipment-model/${model.id}`, model);
         return response.data;

@@ -28,7 +28,7 @@ const columns: ColumnDef<itemProps>[] = [
   { accessorKey: "estatus", header: "Estatus", 
     cell: ({ getValue }) => {
       const status = getValue<itemProps["estatus"]>();
-      let color: BadgeColor = status === "En servicio" ? "success" : status === "Fuera de servicio" ? "error" : "light";
+      const color: BadgeColor = status === "En servicio" ? "success" : status === "Fuera de servicio" ? "error" : "light";
 
       return <Badge size="sm" color={color}>{status}</Badge>;
     }

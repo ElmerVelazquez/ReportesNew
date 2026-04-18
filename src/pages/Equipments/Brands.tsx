@@ -5,7 +5,7 @@ import BrandsTable from "@/components/tables/BasicTables/BrandsTable";
 import { useState } from "react";
 
 export default function Brands() {
-    const [selectedBrandId, setSelectedBrandId] = useState<string | null>("0");
+    const [selectedBrandId, setSelectedBrandId] = useState<string | null>(null);
     const [selectedModelId, setSelectedModelId] = useState<string | null>(null);
 
     return (

@@ -31,6 +31,7 @@ export default function Equipments() {
   const { isOpen, openModal, closeModal } = useModal();
   const [selectedOption, setSelectedOption] = useState("1");
   const [equipmentTypes, setEquipmentTypes] = useState<EquipmentTypes | null>(null);
+  const [selectedRowId, setSelectedRowId] = useState<string | null>(null);
 
   
     useEffect(() => {
@@ -51,7 +52,6 @@ const options = equipmentTypes?.data.map((option: EquipmentOption) => ({
   label: option.name,
 })) ?? [];
 
-const [selectedRowId, setSelectedRowId] = useState<string | null>(null);
 
   return (
     <>

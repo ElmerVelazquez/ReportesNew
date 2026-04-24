@@ -12,23 +12,10 @@ import { motion} from "framer-motion";
 import { Modal } from "@/components/ui/modal";
 import { useModal } from "@/hooks/useModal";
 import Input from "@/components/form/input/InputField";
+import { marca, modelo } from "@/types";
 import { useState } from "react";
 
-
-type marca = {
-  id: string,
-  name: string,
-}; 
-type modelo = {
-  id: string,
-  name: string,
-  brand: {
-    id: string,
-    name: string
-  }
-};
 type modalMode = "addBrand" | "addModel" | "editBrand" | "editModel" | "deleteBrand" | "deleteModel"; 
-
 
 const columnsMarcas: ColumnDef<marca>[] = [
   { accessorKey: "name", header: "Marcas" },
@@ -168,7 +155,7 @@ export default function BrandsTable({ selectedModelId, onRowSelectedModelId, sel
       staleTime: 1000 * 60, // 1 minuto
     });
     const modelosFiltrados = selectedBrandId
-    ? dataModelos.filter((m: modelo) => m.brand.id === selectedBrandId)
+    ? dataModelos.filter((m: modelo) => String(m.brand.id) === selectedBrandId)
     : dataModelos;
 
   return (

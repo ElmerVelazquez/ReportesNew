@@ -19,7 +19,7 @@ interface StandardTableProps<TData> {
   editBtn?: undefined | ((arg: string | null) => void); // Si se muestra el botón de editar
   deleteBtn?: undefined | ((arg: string | null) => void); // Si se muestra el botón de eliminar
 }
-export default function StandardTable<TData extends { id: string }>({columns, data, onRowSelect, selectRowId, editBtn, deleteBtn}: StandardTableProps<TData>) {
+export default function StandardTable<TData extends { id: number }>({columns, data, onRowSelect, selectRowId, editBtn, deleteBtn}: StandardTableProps<TData>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [globalFilter, setGlobalFilter] = useState("");
 
@@ -27,7 +27,7 @@ export default function StandardTable<TData extends { id: string }>({columns, da
     data,
     columns,
     state: { sorting, globalFilter },
-    getRowId: (row) => row.id,
+    getRowId: (row) => String(row.id),
     onSortingChange: setSorting,
     onGlobalFilterChange: setGlobalFilter,
     getCoreRowModel: getCoreRowModel(),
@@ -73,19 +73,18 @@ export default function StandardTable<TData extends { id: string }>({columns, da
                             onClick={() => onRowSelect(selectRowId === row.id ? null : row.id)} 
                             className={`hover:bg-gray-700 transition-color cursor-pointer ${selectRowId === row.id ? 'bg-gray-200 dark:bg-gray-600' : ''}`}   
                         >
-                        {row.getVisibleCells().map((cell) => (
-                            <td
-                            key={cell.id}
-                            className="flex justify-between px-5 py-4 sm:px-6 text-start text-gray-500 text-theme-sm dark:text-gray-400"
-                            >
-                            <div>{flexRender(cell.column.columnDef.cell, cell.getContext())}</div>
-                            <div className="flex">
+                            {row.getVisibleCells().map((cell) => (
+                                <td
+                                key={cell.id}
+                                className="px-5 py-4 sm:px-6 text-start text-gray-500 text-theme-sm dark:text-gray-400"
+                                >
+                                    <div>{flexRender(cell.column.columnDef.cell, cell.getContext())}</div>
+                                </td>
+                            ))}
+                            <div className="flex justify-end items-center h-13 mr-3">
                                 {editBtn && <button onClick={() => editBtn(row.id)} className="text-blue-500 hover:text-blue-700"><EditIcon className="size-4" /></button>}
                                 {deleteBtn && <button onClick={() => deleteBtn(row.id)} className="text-red-500 hover:text-red-700 ml-2"><TrashBinIcon className="size-4" /></button>}
                             </div>
-                            
-                            </td>
-                        ))}
                         </tr>
                     ))}
                 </tbody>

@@ -31,7 +31,7 @@ export const createEquipment = async (equipment: EquipoDto) => {
     }
 };
 
-export const updateEquipment = async ( equipment: Equipo) => {
+export const updateEquipment = async ( equipment: EquipoDto & { id: number }) => {
     try {
         const response = await api.put(`/equipment/${equipment.id}`, equipment);
         return response.data;

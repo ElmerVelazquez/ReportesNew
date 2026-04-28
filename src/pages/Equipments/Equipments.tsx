@@ -2,13 +2,11 @@ import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import ComponentCard from "../../components/common/ComponentCard";
 import PageMeta from "../../components/common/PageMeta";
 import EquipmentTable from "../../components/tables/BasicTables/EquipmentsTable";
-import { useState } from "react";
 import Button from "@/components/ui/button/Button";
-import { AddIcon, TrashBinIcon } from "@/icons/index";
+import { AddIcon,} from "@/icons/index";
 import { useModal } from "@/hooks/useModal";
 
 export default function Equipments() {
-  const [selectedRowId, setSelectedRowId] = useState<string | null>(null);
   const { isOpen, openModal, closeModal } = useModal();
 
   return (
@@ -28,19 +26,14 @@ export default function Equipments() {
             <Button 
               onClick={openModal} 
               startIcon={<AddIcon />} 
-              variant={selectedRowId !== null ? 'secondary' : 'primary'} 
+              variant='primary' 
               size="sm">
-              <span className="text-white">{selectedRowId !== null ? 'Edit' : 'Add'}</span>
-            </Button>
-            <Button 
-              startIcon={<TrashBinIcon />} 
-              variant="outline" size="sm">
-              <span className="text-red-500">Delete</span>
+              <span className="text-white">Add</span>
             </Button>
           </div>
         }>
           
-          <EquipmentTable selectedRowId={selectedRowId} onRowSelect={setSelectedRowId} isOpen={isOpen} closeModal={closeModal} />
+          <EquipmentTable selectedRowId={null} onRowSelect={() => {}} isOpen={isOpen} closeModal={closeModal} openModal={openModal} />
         </ComponentCard>
       </div>
     </>

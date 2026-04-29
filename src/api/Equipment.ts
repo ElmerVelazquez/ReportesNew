@@ -1,4 +1,4 @@
-import { Equipo, EquipoDto} from "types";
+import {EquipoDto} from "types";
 import api from "./index";
 
 export const getEquipment = async () => {

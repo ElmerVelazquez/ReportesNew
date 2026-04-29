@@ -2,7 +2,7 @@ import Badge from "../../ui/badge/Badge";
 import { BadgeColor } from "../../ui/badge/Badge";
 import StandardTable from "@/components/ui/table/StandardTable";
 import {ColumnDef} from "@tanstack/react-table";
-import { getEquipments } from "@/api/index";
+import { getEquipment } from "@/api/Equipment";
 import { getEquipmentTypes } from "@/api/EquipmentType";
 import { getEquipmentBrand } from "@/api/EquipmentBrand";
 import { getEquipmentTModel } from "@/api/EquipmentModel";
@@ -14,7 +14,7 @@ import Radio from "@/components/form/input/Radio";
 import Select from "@/components/form/Select";
 import Input from "@/components/form/input/InputField";
 import TextArea from "@/components/form/input/TextArea";
-import {marca, modelo, StatusEquipo, Equipo, EquipoDto} from "@/types";
+import {marca, modelo, StatusEquipo, Equipo} from "@/types";
 import { useState } from "react";
 import { getEquipmentStatus } from "@/api/EquipmentStatus";
 import { createEquipment, deleteEquipment, updateEquipment } from "@/api/Equipment";
@@ -27,7 +27,7 @@ const columns: ColumnDef<Equipo>[] = [
   { accessorKey: "serial", header: "Serial" },
   { accessorKey: "status", header: "Estatus", 
     cell: ({ getValue }) => {
-      const status = getValue<String>();
+      const status = getValue<string>();
       const color: BadgeColor = status === "En servicio" ? "primary" : status === "Fuera de servicio" ? "error" : "light";
 
       return <Badge size="sm" color={color}>{status}</Badge>;
@@ -35,7 +35,7 @@ const columns: ColumnDef<Equipo>[] = [
   },
   { accessorKey: "note", header: "Nota",
     cell: ({ getValue }) => {
-      const note = getValue<String>();
+      const note = getValue<string>();
       return (
         <span className="max-w-[200px] block truncate">
           {note}
@@ -127,7 +127,7 @@ export default function EquipmentTable({ selectedRowId, onRowSelect, isOpen, clo
   });
   const { data: dataEquipments = [], isLoading: isLoadingEquipments, isError: isErrorEquipments, error: errorEquipments } = useQuery({
     queryKey: ["Equipments"],
-    queryFn: getEquipments,
+    queryFn: getEquipment,
     select: (res) => res.data,
     staleTime: 1000 * 60, // 1 minuto
   });

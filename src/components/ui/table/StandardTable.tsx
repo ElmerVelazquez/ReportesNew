@@ -3,6 +3,7 @@ import {
   getCoreRowModel,
   getSortedRowModel,
   getFilteredRowModel,
+  getPaginationRowModel,
   ColumnDef,
   flexRender,
 } from "@tanstack/react-table";
@@ -22,17 +23,20 @@ interface StandardTableProps<TData> {
 export default function StandardTable<TData extends { id: number }>({columns, data, onRowSelect, selectRowId, editBtn, deleteBtn}: StandardTableProps<TData>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [globalFilter, setGlobalFilter] = useState("");
+  const [pagination, setPagination] = useState({pageIndex: 0,pageSize: 10,});
 
   const table = useReactTable({
     data,
     columns,
-    state: { sorting, globalFilter },
+    state: { sorting, globalFilter, pagination },
     getRowId: (row) => String(row.id),
     onSortingChange: setSorting,
     onGlobalFilterChange: setGlobalFilter,
+    onPaginationChange: setPagination,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
   });
 
   return (
@@ -71,7 +75,7 @@ export default function StandardTable<TData extends { id: number }>({columns, da
                         <tr 
                             key={row.id}
                             onClick={() => onRowSelect(selectRowId === row.id ? null : row.id)} 
-                            className={`hover:bg-gray-700 transition-color cursor-pointer ${selectRowId === row.id ? 'bg-gray-200 dark:bg-gray-600' : ''}`}   
+                            className={`hover:bg-gray-200 dark:hover:bg-gray-700 transition-color cursor-pointer ${selectRowId === row.id ? 'bg-gray-200 dark:bg-gray-600' : ''}`}   
                         >
                             {row.getVisibleCells().map((cell) => (
                                 <td
@@ -89,6 +93,57 @@ export default function StandardTable<TData extends { id: number }>({columns, da
                     ))}
                 </tbody>
             </table>
+            <div className="flex items-center justify-between mt-4 dark:text-gray-400 dark:[&_button]:border-gray-200 [&_button]:border-gray-500">
+                <div className="flex gap-2 ">
+                    <button
+                    onClick={() => table.setPageIndex(0)}
+                    disabled={!table.getCanPreviousPage()}
+                    className="p-2 border rounded disabled:opacity-30 "
+                    >
+                    {"<<"}
+                    </button>
+                    <button
+                    onClick={() => table.previousPage()}
+                    disabled={!table.getCanPreviousPage()}
+                    className="p-2 border rounded disabled:opacity-30"
+                    >
+                    {"<"}
+                    </button>
+                    <button
+                    onClick={() => table.nextPage()}
+                    disabled={!table.getCanNextPage()}
+                    className="p-2 border rounded disabled:opacity-30"
+                    >
+                    {">"}
+                    </button>
+                    <button
+                    onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+                    disabled={!table.getCanNextPage()}
+                    className="p-2 border rounded disabled:opacity-30"
+                    >
+                    {">>"}
+                    </button>
+                </div>
+
+                <span className="flex items-center gap-1 text-sm">
+                    <div>Página</div>
+                    <strong>
+                    {table.getState().pagination.pageIndex + 1} de {table.getPageCount()}
+                    </strong>
+                </span>
+
+                <select
+                    value={table.getState().pagination.pageSize}
+                    onChange={(e) => table.setPageSize(Number(e.target.value))}
+                    className="p-2 border rounded text-sm"
+                >
+                    {[10, 20, 30, 40, 50].map((pageSize) => (
+                    <option key={pageSize} value={pageSize}>
+                        Mostrar {pageSize}
+                    </option>
+                    ))}
+                </select>
+            </div>
         </div>
     </div>
   );

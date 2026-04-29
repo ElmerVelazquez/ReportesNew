@@ -13,7 +13,7 @@ import { Modal } from "@/components/ui/modal";
 import { useModal } from "@/hooks/useModal";
 import Input from "@/components/form/input/InputField";
 import { marca, modelo } from "@/types";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 type modalMode = "addBrand" | "addModel" | "editBrand" | "editModel" | "deleteBrand" | "deleteModel"; 
 
@@ -157,6 +157,16 @@ export default function BrandsTable({ selectedModelId, onRowSelectedModelId, sel
     const modelosFiltrados = selectedBrandId
     ? dataModelos.filter((m: modelo) => String(m.brand.id) === selectedBrandId)
     : dataModelos;
+
+    useEffect(() => {
+      if((modalMode === "editBrand") && resourceId && isOpen) {
+        const dat = dataMarca.find((e: marca)=>e.id===Number(resourceId));
+        setInputValue(dat.name);
+      }else if((modalMode === "editModel") && resourceId && isOpen) {
+        const dat = dataModelos.find((e: modelo)=>e.id===Number(resourceId));
+        setInputValue(dat.name);
+      }
+    }, [modalMode, resourceId, isOpen, dataMarca, dataModelos]);
 
   return (
     <>

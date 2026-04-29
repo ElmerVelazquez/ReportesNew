@@ -15,7 +15,7 @@ import Select from "@/components/form/Select";
 import Input from "@/components/form/input/InputField";
 import TextArea from "@/components/form/input/TextArea";
 import {marca, modelo, StatusEquipo, Equipo} from "@/types";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { getEquipmentStatus } from "@/api/EquipmentStatus";
 import { createEquipment, deleteEquipment, updateEquipment } from "@/api/Equipment";
 
@@ -58,7 +58,7 @@ export default function EquipmentTable({ selectedRowId, onRowSelect, isOpen, clo
   const queryClient = useQueryClient();
   const [modalMode, setModalMode] = useState<modalMode>("addEquipment");
   const [resourceId, setResourceId] = useState<string | null>(null);
-  const [statusValue, setStatusValue] = useState(1);
+  const [statusValue, setStatusValue] = useState("1");
   const [typeValue, setTypeValue] = useState("");
   const [brandValue, setBrandValue] = useState("");
   const [modelValue, setModelValue] = useState("");
@@ -69,18 +69,7 @@ export default function EquipmentTable({ selectedRowId, onRowSelect, isOpen, clo
       setModalMode(mode);
       setResourceId(id || null);
       openModal();
-      if (modalMode === "editEquipment") {
-        const dat = dataEquipments.find((e: Equipo)=>e.id===Number(id));
-        console.log("equipment: ", dat);
-
-        setStatusValue(dat.status.id);
-        setTypeValue(dat.type.id);
-        setBrandValue(dat.brand.id);
-        setModelValue(dat.model.id);
-        setSerialValue(dat.serial);
-        setCommentValue(dat.comment);
-      };
-      console.log("Clicked", mode, id);
+      console.log("Clicked", mode, id,"status:", statusValue," type:", typeValue, "brand:", brandValue, "model:", modelValue, "serial:", serialValue, "comment:", commentValue);
     }
   const resetData = () => {
       console.log("Data refetched");
@@ -96,7 +85,17 @@ export default function EquipmentTable({ selectedRowId, onRowSelect, isOpen, clo
     resetUpdateEquipment();
     resetDeleteEquipment();
   }
-
+  const handleModalClose = () => {
+    closeModal();
+    setStatusValue("1");
+    setTypeValue("");
+    setBrandValue("");
+    setModelValue("");
+    setSerialValue("");
+    setCommentValue("");
+    setResourceId(null);
+    resetMutations();
+  }
   const handleModalAction = () => {
     if(modalMode === "addEquipment") {
       addEquipment({equipment_type_id: Number(typeValue),equipment_brand_id: Number(brandValue),equipment_model_id: Number(modelValue), equipment_status_id: Number(statusValue), serial: serialValue, comment: commentValue});
@@ -180,12 +179,24 @@ export default function EquipmentTable({ selectedRowId, onRowSelect, isOpen, clo
     value: modelo.id.toString(),
     label: modelo.name,
   }));
+  useEffect(() => {
+    if(modalMode === "editEquipment" && resourceId && isOpen) {
+      const dat = dataEquipments.find((e: Equipo)=>e.id===Number(resourceId));
+        console.log("equipment: ", dat);
+        setStatusValue(String(dat.status.id));
+        setTypeValue(String(dat.type.id));
+        setBrandValue(String(dat.brand.id));
+        setModelValue(String(dat.model.id));
+        setSerialValue(dat.serial);
+        setCommentValue(dat.comment);
+    }
+  }, [modalMode, resourceId, isOpen, dataEquipments]);
 
   return (
     <>
     <Modal
           isOpen={isOpen}
-          onClose={closeModal}
+          onClose={handleModalClose}
           showCloseButton={false}
           isblurred={false}
           className={"p-6 lg:p-10" + ( (modalMode === "deleteEquipment") ? " max-w-[400px]" : " max-w-[700px]")}
@@ -220,12 +231,12 @@ export default function EquipmentTable({ selectedRowId, onRowSelect, isOpen, clo
                         name="rad1"
                         label={status.name}
                         value={status.id.toString()}
-                        checked={statusValue === status.id}
-                        onChange={() => setStatusValue(status.id)}
+                        checked={statusValue === String(status.id)}
+                        onChange={() => setStatusValue(String(status.id))}
                       />
                     ))}
                   </div>
-                  <Select options={equipmentTypesOptions} placeholder="Tipo de equipo" onChange={(value) => setTypeValue(value)} className="dark:bg-dark-900 mb-4"/>
+                  <Select options={equipmentTypesOptions} placeholder="Tipo de equipo" value={typeValue} onChange={(value) => setTypeValue(value)} className="dark:bg-dark-900 mb-4"/>
                   <Select options={marcaOptions} placeholder="Marca" value={brandValue} onChange={(value) => {setBrandValue(value)}} className="dark:bg-dark-900 mb-4"/>
                   <Select options={modeloOptions} placeholder="Modelo" value={modelValue} onChange={(value) => {setModelValue(value)}} className="dark:bg-dark-900 mb-4"/>
                   <Input className="mb-4" placeholder="Serial" value={serialValue} onChange={(e) => setSerialValue(e.target.value)}/>

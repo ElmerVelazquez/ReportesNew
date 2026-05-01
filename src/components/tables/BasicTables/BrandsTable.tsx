@@ -14,6 +14,7 @@ import { useModal } from "@/hooks/useModal";
 import Input from "@/components/form/input/InputField";
 import { marca, modelo } from "@/types";
 import { useEffect, useState } from "react";
+import { FetchAlert } from "@/components/ui/alert/FetchAlert";
 
 type modalMode = "addBrand" | "addModel" | "editBrand" | "editModel" | "deleteBrand" | "deleteModel"; 
 
@@ -244,86 +245,31 @@ export default function BrandsTable({ selectedModelId, onRowSelectedModelId, sel
                   />
                 </div>
               )}
-              {(isAddingBrandError || isAddingModelError || isEditingBrandError || isEditingModelError || isDeletingBrandError || isDeletingModelError ) && (
-                <motion.div 
-                  initial={{  x: 100 }} // Empieza invisible y 20px abajo
-                  animate={{  x: 0 }}  // Termina visible y en su posición
-                  transition={{ duration: 0.3 }}  // Duración de medio segundo
-                  className="absolute w-[50%] bottom-[2%] left-[25%]"
-                >
-                  <div className="max-w-75">
-                    <Alert
-                      title="Error de conexion"
-                      message={(addingBrandError?.message) || addingModelError?.message || editingBrandError?.message || editingModelError?.message || deletingBrandError?.message || deletingModelError?.message || "Error al agregar el registro."}
-                      variant={"error"}
-                      onClick={resetMutations}
-                    />
-                  </div>
-                  
-                </motion.div>
-              )}
+              <FetchAlert
+                  isPending={isAddingBrand || isAddingModel || isEditingBrand || isEditingModel || isDeletingBrand || isDeletingModel}
+                  isError={isAddingBrandError || isAddingModelError || isEditingBrandError || isEditingModelError || isDeletingBrandError || isDeletingModelError}
+                  error={addingBrandError?.message || addingModelError?.message || editingBrandError?.message || editingModelError?.message || deletingBrandError?.message || deletingModelError?.message}
+                  onReset={resetMutations}
+                  variant="toast"
+              />
             </div>
       </Modal>
       <div className="flex gap-10 justify-center">
           <div className="w-full">
-            <div className="flex justify-end gap-3 text-xs pb-3" >
-              <Button 
-                onClick={() => handleclick("addBrand")} 
-                startIcon={<AddIcon />} 
-                variant={'primary'} 
-                size="xs">
-                <span className="text-white">Add</span>
-              </Button>
-            </div>
-              <StandardTable<marca> editBtn={(id) => handleclick("editBrand",id)} deleteBtn={(id) => handleclick("deleteBrand",id)} selectRowId={selectedBrandId} onRowSelect={onRowSelectedBrandId} columns={columnsMarcas} data={dataMarca} />
+              <StandardTable<marca>  addBtn={() => handleclick("addBrand")} isAddable={true} editBtn={(id) => handleclick("editBrand",id)} deleteBtn={(id) => handleclick("deleteBrand",id)} selectRowId={selectedBrandId} onRowSelect={onRowSelectedBrandId} columns={columnsMarcas} data={dataMarca} />
           </div>
           <div className="w-full">
-            <div className="flex justify-end gap-3 text-xs pb-3" >
-              <Button 
-                onClick={() => handleclick("addModel")} 
-                startIcon={<AddIcon />} 
-                variant={selectedBrandId ? 'primary' : 'outline'} 
-                size="xs"
-                disabled={!selectedBrandId} // Deshabilitar si no hay una marca seleccionada
-                >
-                <span className="text-white">Add</span>
-              </Button>
-            </div>
-              <StandardTable<modelo> editBtn={(id) =>handleclick("editModel",id)} deleteBtn={(id) =>handleclick("deleteModel",id)}  selectRowId={selectedModelId} onRowSelect={onRowSelectedModelId} columns={columnsModelos} data={modelosFiltrados} />
+              <StandardTable<modelo> addBtn={() => handleclick("addModel")} isAddable={!!selectedBrandId} editBtn={(id) =>handleclick("editModel",id)} deleteBtn={(id) =>handleclick("deleteModel",id)}  selectRowId={selectedModelId} onRowSelect={onRowSelectedModelId} columns={columnsModelos} data={modelosFiltrados} />
           </div>
       </div>
-      {(loadingMarcas || loadingModelos) && (
-        <div className="flex justify-center">
-          <motion.div
-            className="w-13 h-13 border-5 rounded-full border-gray-300 border-t-blue-500"
-            // Decimos qué propiedad animar (rotar 360 grados)
-            animate={{ rotate: 360 }}
-            // Aplicamos la configuración de transición que definimos arriba
-            transition={
-              {
-                repeat: Infinity,
-                duration: 1,
-                ease: "easeInOut"
-              }
-            }
-          />
-        </div>
-      )}
-      {(isErrorMarcas || isErrorModelos) && (
-        <motion.div 
-          initial={{  x: 100 }} // Empieza invisible y 20px abajo
-          animate={{  x: 0 }}  // Termina visible y en su posición
-          transition={{ duration: 0.3 }}  // Duración de medio segundo
-          className="absolute w-[50%] bottom-[2%] left-[25%]"
-        >
-          <Alert
-            title="Error de conexion"
-            message={"Error al obtener los datos: " + (errorMarcas?.message || errorModelos?.message || "Error desconocido.")}
-            variant={"error"}
-            onClick={resetData}
-          />
-        </motion.div>
-      )}
+
+      <FetchAlert
+        isPending={loadingMarcas || loadingModelos}
+        isError={isErrorMarcas || isErrorModelos}
+        error={errorMarcas || errorModelos}
+        onReset={resetData}
+        variant="toast"
+      />
     </>
   );
 };

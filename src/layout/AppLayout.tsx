@@ -1,11 +1,13 @@
 import { SidebarProvider, useSidebar } from "../context/SidebarContext";
-import { Outlet } from "react-router";
+import { Outlet, useLocation } from "react-router";
 import AppHeader from "./AppHeader";
 import Backdrop from "./Backdrop";
 import AppSidebar from "./AppSidebar";
+import { motion } from "framer-motion";
 
 const LayoutContent: React.FC = () => {
   const { isExpanded, isHovered, isMobileOpen } = useSidebar();
+  const location = useLocation();
 
   return (
     <div className="min-h-screen xl:flex">
@@ -20,7 +22,14 @@ const LayoutContent: React.FC = () => {
       >
         <AppHeader />
         <div className="p-4 mx-auto max-w-(--breakpoint-2xl) md:p-6">
-          <Outlet />
+          <motion.div
+            key={location.pathname}
+            initial={{ opacity: 0, y: 20 }}    /* Estado inicial: invisible y un poco abajo */
+            animate={{ opacity: 1, y: 0 }}     /* Estado final: visible y en su sitio */
+            transition={{ duration: 0.3 }}     /* Duración de la transición */
+          > 
+            <Outlet />
+          </motion.div>
         </div>
       </div>
     </div>

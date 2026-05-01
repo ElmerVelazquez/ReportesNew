@@ -7,8 +7,6 @@ import { getEquipmentTypes } from "@/api/EquipmentType";
 import { getEquipmentBrand } from "@/api/EquipmentBrand";
 import { getEquipmentTModel } from "@/api/EquipmentModel";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
-import Alert from "@/components/ui/alert/Alert";
-import { motion } from "framer-motion";
 import { Modal } from "@/components/ui/modal";
 import Radio from "@/components/form/input/Radio";
 import Select from "@/components/form/Select";
@@ -18,6 +16,8 @@ import {marca, modelo, StatusEquipo, Equipo} from "@/types";
 import { useEffect, useState } from "react";
 import { getEquipmentStatus } from "@/api/EquipmentStatus";
 import { createEquipment, deleteEquipment, updateEquipment } from "@/api/Equipment";
+import { FetchAlert } from "@/components/ui/alert/FetchAlert";
+import { useModal } from "@/hooks/useModal";
 
 
 const columns: ColumnDef<Equipo>[] = [
@@ -48,13 +48,12 @@ const columns: ColumnDef<Equipo>[] = [
 interface EquipmentTableProps {
   selectedRowId: string | null;
   onRowSelect: (id: string | null) => void;
-  isOpen: boolean;
-  openModal: () => void;
-  closeModal: () => void;
+
 }
 type modalMode = "addEquipment" | "editEquipment" | "deleteEquipment";
 
-export default function EquipmentTable({ selectedRowId, onRowSelect, isOpen, closeModal, openModal }: EquipmentTableProps) {
+export default function EquipmentTable({ selectedRowId, onRowSelect}: EquipmentTableProps) {
+  const { isOpen, openModal, closeModal } = useModal();
   const queryClient = useQueryClient();
   const [modalMode, setModalMode] = useState<modalMode>("addEquipment");
   const [resourceId, setResourceId] = useState<string | null>(null);
@@ -190,6 +189,9 @@ export default function EquipmentTable({ selectedRowId, onRowSelect, isOpen, clo
         setSerialValue(dat.serial);
         setCommentValue(dat.comment);
     }
+    if(isOpen === false) {
+      handleModalClose();
+    }
   }, [modalMode, resourceId, isOpen, dataEquipments]);
 
   return (
@@ -249,7 +251,7 @@ export default function EquipmentTable({ selectedRowId, onRowSelect, isOpen, clo
             </div>
             <div className={"flex items-center gap-3 mt-6 modal-footer "+( (modalMode === "deleteEquipment") ? "justify-center gap-10" : "sm:justify-end")}>
               <button
-                onClick={closeModal}
+                onClick={handleModalClose}
                 type="button"
                 className="flex w-full justify-center rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] sm:w-auto"
               >
@@ -269,77 +271,26 @@ export default function EquipmentTable({ selectedRowId, onRowSelect, isOpen, clo
                   ""}
               </button>
             </div>
-            {(isAddingEquipment || isEditingEquipment || isDeletingEquipment) && (
-                <div className="flex justify-center absolute bottom-5 left-5/11">
-                  <motion.div
-                    className="w-13 h-13 border-5 rounded-full border-gray-300 border-t-blue-500"
-                    // Decimos qué propiedad animar (rotar 360 grados)
-                    animate={{ rotate: 360 }}
-                    // Aplicamos la configuración de transición que definimos arriba
-                    transition={
-                      {
-                        repeat: Infinity,
-                        duration: 1,
-                        ease: "easeInOut"
-                      }
-                    }
-                  />
-                </div>
-              )}
-            {(isAddingEquipmentError || isEditingEquipmentError || isDeletingEquipmentError) && (
-                <motion.div 
-                  initial={{  x: 100 }} // Empieza invisible y 20px abajo
-                  animate={{  x: 0 }}  // Termina visible y en su posición
-                  transition={{ duration: 0.3 }}  // Duración de medio segundo
-                  className="absolute w-[50%] bottom-[2%] left-[25%]"
-                >
-                  <div className="max-w-75">
-                    <Alert
-                      title="Error de conexion"
-                      message={addingEquipmentError?.message || editingEquipmentError?.message || deletingEquipmentError?.message || "Error al agregar el registro."}
-                      variant={"error"}
-                      onClick={resetMutations}
-                    />
-                  </div>
-                  
-                </motion.div>
-              )}
+            
+              <FetchAlert 
+                  isPending={isAddingEquipment || isEditingEquipment || isDeletingEquipment} 
+                  isError={isAddingEquipmentError || isEditingEquipmentError || isDeletingEquipmentError} 
+                  error={addingEquipmentError || editingEquipmentError || deletingEquipmentError} 
+                  onReset={resetMutations}
+                  variant="toast" 
+                />
           </div>
       </Modal>
 
-      <StandardTable<Equipo> selectRowId={selectedRowId} onRowSelect={onRowSelect} columns={columns} data={dataMapped} editBtn={(id)=>handleclick("editEquipment", id)} deleteBtn={(id)=>handleclick("deleteEquipment", id)} />
-      {(isLoadingEquipments || isLoadingMarcas || isLoadingModelos || isLoadingEquipmentStatus) && (
-        <div className="flex justify-center">
-          <motion.div
-            className="w-13 h-13 border-5 rounded-full border-gray-300 border-t-blue-500"
-            // Decimos qué propiedad animar (rotar 360 grados)
-            animate={{ rotate: 360 }}
-            // Aplicamos la configuración de transición que definimos arriba
-            transition={
-              {
-                repeat: Infinity,
-                duration: 1,
-                ease: "easeInOut"
-              }
-            }
-          />
-        </div>
-      )}
-      {(isErrorEquipments || isErrorMarcas || isErrorModelos || isErrorEquipmentStatus) && (
-          <motion.div 
-            initial={{  x: 100 }} // Empieza invisible y 20px abajo
-            animate={{  x: 0 }}  // Termina visible y en su posición
-            transition={{ duration: 0.3 }}  // Duración de medio segundo
-            className="absolute w-[50%] bottom-[2%] left-[25%]"
-          >
-            <Alert
-              title="Error de conexion"
-              message={"Error: " + errorEquipments?.message || errorMarcas?.message || errorModelos?.message || errorEquipmentStatus?.message || "Error desconocido"}
-              variant={"error"}
-              onClick={resetData}
-            />
-          </motion.div>
-        )}
+      <StandardTable<Equipo> selectRowId={selectedRowId} onRowSelect={onRowSelect} columns={columns} data={dataMapped} addBtn={openModal} editBtn={(id)=>handleclick("editEquipment", id)} deleteBtn={(id)=>handleclick("deleteEquipment", id)} />
+      <FetchAlert 
+        isPending={isLoadingEquipments || isLoadingMarcas || isLoadingModelos || isLoadingEquipmentStatus} 
+        isError={isErrorEquipments || isErrorMarcas || isErrorModelos || isErrorEquipmentStatus} 
+        error={errorEquipments || errorMarcas || errorModelos || errorEquipmentStatus} 
+        onReset={resetData}
+        variant="toast" 
+      />
+      
     </>  
       
   );

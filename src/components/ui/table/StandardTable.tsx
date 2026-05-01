@@ -9,7 +9,8 @@ import {
 } from "@tanstack/react-table";
 import { SortingState } from "@tanstack/react-table";
 import  { useState } from "react";
-import {AscIcon, DescIcon, UnsortedIcon,EditIcon, TrashBinIcon} from "@/icons";      
+import {AscIcon, DescIcon, UnsortedIcon,EditIcon, TrashBinIcon, AddIcon} from "@/icons";      
+import Button from "../button/Button";
 
 
 interface StandardTableProps<TData> {
@@ -19,8 +20,10 @@ interface StandardTableProps<TData> {
   selectRowId: string | null; // ID de la fila seleccionada
   editBtn?: undefined | ((arg: string | null) => void); // Si se muestra el botón de editar
   deleteBtn?: undefined | ((arg: string | null) => void); // Si se muestra el botón de eliminar
+  addBtn?: undefined | (() => void); // Si se muestra el botón de agregar   
+  isAddable?: boolean;
 }
-export default function StandardTable<TData extends { id: number }>({columns, data, onRowSelect, selectRowId, editBtn, deleteBtn}: StandardTableProps<TData>) {
+export default function StandardTable<TData extends { id: number }>({columns, data, onRowSelect, selectRowId, editBtn, deleteBtn, addBtn, isAddable=true}: StandardTableProps<TData>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [globalFilter, setGlobalFilter] = useState("");
   const [pagination, setPagination] = useState({pageIndex: 0,pageSize: 10,});
@@ -42,12 +45,24 @@ export default function StandardTable<TData extends { id: number }>({columns, da
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
         <div className="max-w-full overflow-x-auto">
-            <input
-                value={globalFilter ?? ""}
-                onChange={(e) => setGlobalFilter(e.target.value)}
-                placeholder="Filtrar..."
-                className="border-none focus:outline-none outline:none p-1 mb-2 px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400 cursor-pointer"
-            />
+            <div className="flex items-center justify-between">
+                <input
+                    value={globalFilter ?? ""}
+                    onChange={(e) => setGlobalFilter(e.target.value)}
+                    placeholder="Filtrar..."
+                    className="border-none focus:outline-none outline:none p-1 mb-2 px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400 cursor-pointer"
+                />
+                {addBtn &&
+                <Button 
+                    onClick={addBtn} 
+                    startIcon={<AddIcon />} 
+                    variant={isAddable ? 'primary' : 'outline'}
+                    disabled={!isAddable} 
+                    size="xs">
+                <span className="text-white">Add</span>
+              </Button>}
+            </div>
+            
             <table className="min-w-full border-collapse">
 
             <thead className="border-b border-gray-100 dark:border-white/[0.05]">
@@ -138,7 +153,7 @@ export default function StandardTable<TData extends { id: number }>({columns, da
                     className="p-2 border rounded text-sm"
                 >
                     {[10, 20, 30, 40, 50].map((pageSize) => (
-                    <option key={pageSize} value={pageSize}>
+                    <option key={pageSize} value={pageSize} className="dark:bg-gray-700 dark:text-color-gray-400">
                         Mostrar {pageSize}
                     </option>
                     ))}

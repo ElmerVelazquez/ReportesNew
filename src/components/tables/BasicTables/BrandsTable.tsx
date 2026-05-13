@@ -1,266 +1,331 @@
-import {
-  ColumnDef,
-} from "@tanstack/react-table";
+import { ColumnDef } from "@tanstack/react-table";
+import { useEffect, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import StandardTable from "@/components/ui/table/StandardTable";
-import { getEquipmentBrand, createEquipmentBrand, updateEquipmentBrand, deleteEquipmentBrand } from "@/api/EquipmentBrand";
-import { createEquipmentModel, deleteEquipmentModel, getEquipmentTModel, updateEquipmentModel } from "@/api/EquipmentModel";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { AddIcon } from "@/icons/index";
-import Button from "@/components/ui/button/Button"; 
-import Alert from "@/components/ui/alert/Alert";
-import { motion} from "framer-motion";
-import { Modal } from "@/components/ui/modal";
-import { useModal } from "@/hooks/useModal";
 import Input from "@/components/form/input/InputField";
 import { marca, modelo } from "@/types";
-import { useEffect, useState } from "react";
+import {
+  createEquipmentBrand,
+  deleteEquipmentBrand,
+  getEquipmentBrand,
+  updateEquipmentBrand,
+} from "@/api/EquipmentBrand";
+import {
+  createEquipmentModel,
+  deleteEquipmentModel,
+  getEquipmentTModel,
+  updateEquipmentModel,
+} from "@/api/EquipmentModel";
 import { FetchAlert } from "@/components/ui/alert/FetchAlert";
+import { CrudModal } from "@/components/ui/modal/CrudModal";
+import { useResourceModal } from "@/hooks/useResourceModal";
 
-type modalMode = "addBrand" | "addModel" | "editBrand" | "editModel" | "deleteBrand" | "deleteModel"; 
+type modalMode =
+  | "addBrand"
+  | "addModel"
+  | "editBrand"
+  | "editModel"
+  | "deleteBrand"
+  | "deleteModel";
 
-const columnsMarcas: ColumnDef<marca>[] = [
-  { accessorKey: "name", header: "Marcas" },
-];
-const columnsModelos: ColumnDef<modelo>[] = [
-  { accessorKey: "name", header: "modelos" }
-];
+const columnsMarcas: ColumnDef<marca>[] = [{ accessorKey: "name", header: "Marcas" }];
+const columnsModelos: ColumnDef<modelo>[] = [{ accessorKey: "name", header: "modelos" }];
+
+const modalMeta: Record<
+  modalMode,
+  {
+    title: string;
+    description: string;
+    actionLabel: string;
+    compact: boolean;
+    tone: "add" | "edit" | "delete";
+    placeholder?: string;
+  }
+> = {
+  addBrand: {
+    title: "Agregar Marca",
+    description: "Introduce los datos de la marca",
+    actionLabel: "Add",
+    compact: false,
+    tone: "add",
+    placeholder: "Nombre de la marca",
+  },
+  addModel: {
+    title: "Agregar Modelo",
+    description: "Introduce los datos del modelo",
+    actionLabel: "Add",
+    compact: false,
+    tone: "add",
+    placeholder: "Nombre del modelo",
+  },
+  editBrand: {
+    title: "Editar Marca",
+    description: "Edita los datos de la marca",
+    actionLabel: "Edit",
+    compact: false,
+    tone: "edit",
+    placeholder: "Nombre de la marca",
+  },
+  editModel: {
+    title: "Editar Modelo",
+    description: "Edita los datos del modelo",
+    actionLabel: "Edit",
+    compact: false,
+    tone: "edit",
+    placeholder: "Nombre del modelo",
+  },
+  deleteBrand: {
+    title: "Eliminar Marca",
+    description: "¿Estás seguro de que deseas eliminar esta marca?",
+    actionLabel: "Delete",
+    compact: true,
+    tone: "delete",
+  },
+  deleteModel: {
+    title: "Eliminar Modelo",
+    description: "¿Estás seguro de que deseas eliminar este modelo?",
+    actionLabel: "Delete",
+    compact: true,
+    tone: "delete",
+  },
+};
+
 interface BrandsTableProps {
   selectedModelId: string | null;
   onRowSelectedModelId: (id: string | null) => void;
   selectedBrandId: string | null;
   onRowSelectedBrandId: (id: string | null) => void;
-
 }
 
-export default function BrandsTable({ selectedModelId, onRowSelectedModelId, selectedBrandId, onRowSelectedBrandId}: BrandsTableProps) {
-    const { isOpen, openModal, closeModal } = useModal();
-    const [modalMode, setModalMode] = useState<modalMode>("addModel");
-    const [inputValue, setInputValue] = useState("");
-    const queryClient = useQueryClient();
-    const [resourceId, setEdithId] = useState<string | null>(null);
+export default function BrandsTable({
+  selectedModelId,
+  onRowSelectedModelId,
+  selectedBrandId,
+  onRowSelectedBrandId,
+}: BrandsTableProps) {
+  const queryClient = useQueryClient();
+  const { isOpen, modalMode, resourceId, openResourceModal, closeResourceModal } =
+    useResourceModal<modalMode>("addBrand");
+  const [inputValue, setInputValue] = useState("");
 
-    const handleclick = (mode: modalMode, id?: string | null) => {
-      setModalMode(mode);
-      setEdithId(id || null);
-      openModal();
-    }
-    const handleModalClose = () => {
-      setInputValue("");
-      setEdithId(null);
-      closeModal();
-    }
-    const resetData = () => {
-      console.log("Data refetched");
-      queryClient.resetQueries({ queryKey: ["EquipmentModels"] });
-      queryClient.resetQueries({ queryKey: ["EquipmentBrands"] });
+  const resetData = () => {
+    queryClient.resetQueries({ queryKey: ["EquipmentModels"] });
+    queryClient.resetQueries({ queryKey: ["EquipmentBrands"] });
+  };
 
-    }
-    const resetMutations = () => {
-      resetAddBrand();
-      resetAddModel();
-      resetEditBrand();
-      resetEditModel();
-      resetDeleteBrand();
-      resetDeleteModel();
-    } 
+  const resetMutations = () => {
+    resetAddBrand();
+    resetAddModel();
+    resetEditBrand();
+    resetEditModel();
+    resetDeleteBrand();
+    resetDeleteModel();
+  };
 
+  const handleModalClose = () => {
+    setInputValue("");
+    closeResourceModal();
+    resetMutations();
+  };
 
-    const handleModalAction = () => {
-      if (modalMode === "addBrand") {
-        // Lógica para agregar marca
-        addBrand({ name: inputValue });
-        setInputValue(""); // Aquí deberías reemplazar con los datos reales del formulario
-      }else if (modalMode === "addModel") {
-        addModel({ name: inputValue, equipment_brand_id: Number(selectedBrandId) }); // Aquí deberías reemplazar con los datos reales del formulario
-        setInputValue("");
-      }else if (modalMode === "editBrand") {
-        editBrand( {id: Number(resourceId), name: inputValue} ); // Lógica para editar marca
-        console.log("Edit brand with id:", resourceId, "and new name:", inputValue);
-      }else if (modalMode === "editModel") {
-        editModel( {id: Number(resourceId), name: inputValue} ); // Lógica para editar modelo
-        console.log("Edit model with id:", resourceId, "and new name:", inputValue);
-      }else if (modalMode === "deleteBrand") {
-        deleteBrand(Number(resourceId)); // Lógica para eliminar marca
-        setInputValue("");
-        console.log("Delete brand with id:", resourceId);
-      }else if (modalMode === "deleteModel") {
-        deleteModel(Number(resourceId)); // LógicsetInputValue("");a para eliminar modelo
-        setInputValue("");
-        console.log("Delete model with id:", resourceId);
-      }
-
+  const handleModalAction = () => {
+    if (modalMode === "addBrand") {
+      addBrand({ name: inputValue });
+      return;
     }
 
-    const { mutate: addBrand, isPending: isAddingBrand, isError: isAddingBrandError, error: addingBrandError, reset: resetAddBrand } = useMutation({
-      mutationFn: createEquipmentBrand,
-      onSuccess: () => {
-        queryClient.refetchQueries({ queryKey: ["EquipmentBrands"] });
+    if (modalMode === "addModel") {
+      if (!selectedBrandId) return;
+      addModel({ name: inputValue, equipment_brand_id: Number(selectedBrandId) });
+      return;
+    }
 
-      }
-    });
-    const { mutate: addModel, isPending: isAddingModel, isError: isAddingModelError, error: addingModelError, reset: resetAddModel } = useMutation({
-      mutationFn: createEquipmentModel,
-      onSuccess: () => {
-        console.log("Model added successfully");
-        queryClient.refetchQueries({ queryKey: ["EquipmentModels"] });
-      }
-    });
-    const { mutate: editBrand, isPending: isEditingBrand, isError: isEditingBrandError, error: editingBrandError, reset: resetEditBrand } = useMutation({
-      mutationFn: updateEquipmentBrand,
-      onSuccess: () => {
-        console.log("Brand edited successfully");
-        queryClient.refetchQueries({ queryKey: ["EquipmentBrands"] });
-        closeModal();
+    if (modalMode === "editBrand" && resourceId) {
+      editBrand({ id: Number(resourceId), name: inputValue });
+      return;
+    }
 
-      }
-    });
-    const { mutate: editModel, isPending: isEditingModel, isError: isEditingModelError, error: editingModelError, reset: resetEditModel } = useMutation({
-      mutationFn: updateEquipmentModel,
-      onSuccess: () => {
-        console.log("Model edited successfully");
-        queryClient.refetchQueries({ queryKey: ["EquipmentModels"] });
-        closeModal();
-      }
-    });
+    if (modalMode === "editModel" && resourceId) {
+      editModel({ id: Number(resourceId), name: inputValue });
+      return;
+    }
 
-    const {mutate : deleteBrand, isPending: isDeletingBrand, isError: isDeletingBrandError, error: deletingBrandError, reset: resetDeleteBrand} = useMutation({
-      mutationFn: deleteEquipmentBrand, // Aquí deberías implementar la función para eliminar la marca
-      onSuccess: () => {
-        console.log("Brand deleted successfully");
-        queryClient.refetchQueries({ queryKey: ["EquipmentBrands"] });
-        closeModal();
+    if (modalMode === "deleteBrand" && resourceId) {
+      deleteBrand(Number(resourceId));
+      return;
+    }
 
-      }
-    });
-    const {mutate : deleteModel, isPending: isDeletingModel, isError: isDeletingModelError, error: deletingModelError, reset: resetDeleteModel} = useMutation({
-      mutationFn: deleteEquipmentModel, // Aquí deberías implementar la función para eliminar el modelo
-      onSuccess: () => {
-        console.log("Model deleted successfully");
-        queryClient.refetchQueries({ queryKey: ["EquipmentModels"] });
-        closeModal();
+    if (modalMode === "deleteModel" && resourceId) {
+      deleteModel(Number(resourceId));
+    }
+  };
 
-      }
-    });
+  const { mutate: addBrand, isPending: isAddingBrand, isError: isAddingBrandError, error: addingBrandError, reset: resetAddBrand } = useMutation({
+    mutationFn: createEquipmentBrand,
+    onSuccess: () => {
+      queryClient.refetchQueries({ queryKey: ["EquipmentBrands"] });
+      handleModalClose();
+    },
+  });
+  const { mutate: addModel, isPending: isAddingModel, isError: isAddingModelError, error: addingModelError, reset: resetAddModel } = useMutation({
+    mutationFn: createEquipmentModel,
+    onSuccess: () => {
+      queryClient.refetchQueries({ queryKey: ["EquipmentModels"] });
+      handleModalClose();
+    },
+  });
+  const { mutate: editBrand, isPending: isEditingBrand, isError: isEditingBrandError, error: editingBrandError, reset: resetEditBrand } = useMutation({
+    mutationFn: updateEquipmentBrand,
+    onSuccess: () => {
+      queryClient.refetchQueries({ queryKey: ["EquipmentBrands"] });
+      handleModalClose();
+    },
+  });
+  const { mutate: editModel, isPending: isEditingModel, isError: isEditingModelError, error: editingModelError, reset: resetEditModel } = useMutation({
+    mutationFn: updateEquipmentModel,
+    onSuccess: () => {
+      queryClient.refetchQueries({ queryKey: ["EquipmentModels"] });
+      handleModalClose();
+    },
+  });
+  const { mutate: deleteBrand, isPending: isDeletingBrand, isError: isDeletingBrandError, error: deletingBrandError, reset: resetDeleteBrand } = useMutation({
+    mutationFn: deleteEquipmentBrand,
+    onSuccess: () => {
+      queryClient.refetchQueries({ queryKey: ["EquipmentBrands"] });
+      handleModalClose();
+    },
+  });
+  const { mutate: deleteModel, isPending: isDeletingModel, isError: isDeletingModelError, error: deletingModelError, reset: resetDeleteModel } = useMutation({
+    mutationFn: deleteEquipmentModel,
+    onSuccess: () => {
+      queryClient.refetchQueries({ queryKey: ["EquipmentModels"] });
+      handleModalClose();
+    },
+  });
 
-    const { data: dataMarca = [], isLoading: loadingMarcas, isError: isErrorMarcas, error: errorMarcas } = useQuery({
-      queryKey: ["EquipmentBrands"],
-      queryFn: getEquipmentBrand,
-      select: (res) => res.data,
-      staleTime: 1000 * 60, // 1 minuto
-    });
+  const {
+    data: dataMarca = [],
+    isLoading: loadingMarcas,
+    isError: isErrorMarcas,
+    error: errorMarcas,
+  } = useQuery({
+    queryKey: ["EquipmentBrands"],
+    queryFn: getEquipmentBrand,
+    select: (res) => res.data,
+    staleTime: 1000 * 60,
+  });
 
-    const { data: dataModelos = [], isLoading: loadingModelos, isError: isErrorModelos, error: errorModelos } = useQuery({
-      queryKey: ["EquipmentModels"],
-      queryFn: getEquipmentTModel,
-      select: (res) => res.data,
-      staleTime: 1000 * 60, // 1 minuto
-    });
-    const modelosFiltrados = selectedBrandId
+  const {
+    data: dataModelos = [],
+    isLoading: loadingModelos,
+    isError: isErrorModelos,
+    error: errorModelos,
+  } = useQuery({
+    queryKey: ["EquipmentModels"],
+    queryFn: getEquipmentTModel,
+    select: (res) => res.data,
+    staleTime: 1000 * 60,
+  });
+
+  const modelosFiltrados = selectedBrandId
     ? dataModelos.filter((m: modelo) => String(m.brand.id) === selectedBrandId)
     : dataModelos;
 
-    useEffect(() => {
-      if((modalMode === "editBrand") && resourceId && isOpen) {
-        const dat = dataMarca.find((e: marca)=>e.id===Number(resourceId));
-        setInputValue(dat.name);
-      }else if((modalMode === "editModel") && resourceId && isOpen) {
-        const dat = dataModelos.find((e: modelo)=>e.id===Number(resourceId));
-        setInputValue(dat.name);
-      }
-    }, [modalMode, resourceId, isOpen, dataMarca, dataModelos]);
+  useEffect(() => {
+    if (!isOpen) return;
+
+    if (modalMode === "editBrand" && resourceId) {
+      const dat = dataMarca.find((e: marca) => e.id === Number(resourceId));
+      setInputValue(dat?.name ?? "");
+      return;
+    }
+
+    if (modalMode === "editModel" && resourceId) {
+      const dat = dataModelos.find((e: modelo) => e.id === Number(resourceId));
+      setInputValue(dat?.name ?? "");
+      return;
+    }
+
+    setInputValue("");
+  }, [modalMode, resourceId, isOpen, dataMarca, dataModelos]);
+
+  const activeModal = modalMeta[modalMode];
+  const isDeleting = modalMode === "deleteBrand" || modalMode === "deleteModel";
 
   return (
     <>
-      <Modal
-          isOpen={isOpen}
-          onClose={handleModalClose}
-          className={"p-6 lg:p-10" + ( (modalMode === "deleteBrand" || modalMode === "deleteModel") ? " max-w-[400px]" : " max-w-[700px]")}
-          showCloseButton={false}
-          isblurred={false}
-        > 
-            <div className="flex flex-col px-2 overflow-y-auto custom-scrollbar">
-              <div>
-                <h5 className="mb-2 font-semibold text-gray-800 modal-title text-theme-xl dark:text-white/90 lg:text-2xl">
-                  {
-                    modalMode === "addBrand" ? "Agregar Marca" :
-                    modalMode === "addModel" ? "Agregar Modelo" :
-                    modalMode === "editBrand" ? "Editar Marca" :
-                    modalMode === "editModel" ? "Editar Modelo" :
-                    ""
-                  }
-                </h5>
-                <p className={" text-gray-500 dark:text-gray-400" + ((modalMode === "deleteBrand" || modalMode === "deleteModel") ? " text-center text-md" : " text-sm")}>
-                {
-                    modalMode === "addBrand" ? "Introduce los datos de la marca" :
-                    modalMode === "addModel" ? "Introduce los datos del modelo" :
-                    modalMode === "editBrand" ? "Edita los datos de la marca" :
-                    modalMode === "editModel" ? "Edita los datos del modelo" :
-                    modalMode === "deleteBrand" ? "¿Estás seguro de que deseas eliminar esta marca?" :
-                    modalMode === "deleteModel" ? "¿Estás seguro de que deseas eliminar este modelo?" :
-                    ""
-                  }
-                </p>
-              </div>
-              {(modalMode === "addBrand" || modalMode === "addModel" || modalMode === "editBrand" || modalMode === "editModel") && (
-                <div className="mt-8">
-                  <Input onChange={(e) => setInputValue(e.target.value)} value={inputValue} className="mb-4" placeholder={(modalMode === "addBrand" || modalMode === "editBrand") ? "Nombre de la marca" : "Nombre del modelo"}/>
-                </div>
-              )}
-              <div className={"flex items-center gap-3 mt-6 modal-footer "+( (modalMode === "deleteBrand" || modalMode === "deleteModel" ) ? "justify-center gap-10" : "sm:justify-end")}>
-                <button
-                  onClick={handleModalClose}
-                  type="button"
-                  className="flex w-full justify-center rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] sm:w-auto"
-                >
-                  Close
-                </button>
-                <button
-                  onClick={handleModalAction}
-                  type="button"
-                  className={`flex w-full justify-center rounded-lg  px-4 py-2.5 text-sm font-medium text-white  sm:w-auto 
-                    ${modalMode === "addBrand" || modalMode === "addModel" ? "bg-brand-500 hover:bg-brand-600" : 
-                      modalMode === "editBrand" || modalMode === "editModel" ? "bg-green-500 hover:bg-green-600":
-                      modalMode === "deleteBrand" || modalMode === "deleteModel" ? "bg-red-500 hover:bg-red-600":""}`}
-                >
-                  {(modalMode === "addBrand" || modalMode === "addModel")? "Add" :
-                  (modalMode === "editBrand" || modalMode === "editModel")? "Edit" :
-                  (modalMode === "deleteBrand" || modalMode === "deleteModel")? "Delete" :
-                  ""}
-                </button>
-              </div>
-              {(isAddingBrand || isAddingModel || isEditingBrand || isEditingModel || isDeletingBrand || isDeletingModel ) && (
-                <div className="flex justify-center absolute bottom-5 left-5/11">
-                  <motion.div
-                    className="w-13 h-13 border-5 rounded-full border-gray-300 border-t-blue-500"
-                    // Decimos qué propiedad animar (rotar 360 grados)
-                    animate={{ rotate: 360 }}
-                    // Aplicamos la configuración de transición que definimos arriba
-                    transition={
-                      {
-                        repeat: Infinity,
-                        duration: 1,
-                        ease: "easeInOut"
-                      }
-                    }
-                  />
-                </div>
-              )}
-              <FetchAlert
-                  isPending={isAddingBrand || isAddingModel || isEditingBrand || isEditingModel || isDeletingBrand || isDeletingModel}
-                  isError={isAddingBrandError || isAddingModelError || isEditingBrandError || isEditingModelError || isDeletingBrandError || isDeletingModelError}
-                  error={addingBrandError?.message || addingModelError?.message || editingBrandError?.message || editingModelError?.message || deletingBrandError?.message || deletingModelError?.message}
-                  onReset={resetMutations}
-                  variant="toast"
-              />
-            </div>
-      </Modal>
+      <CrudModal
+        isOpen={isOpen}
+        onClose={handleModalClose}
+        onAction={handleModalAction}
+        title={activeModal.title}
+        description={activeModal.description}
+        actionLabel={activeModal.actionLabel}
+        tone={activeModal.tone}
+        compact={activeModal.compact}
+        isPending={
+          isAddingBrand ||
+          isAddingModel ||
+          isEditingBrand ||
+          isEditingModel ||
+          isDeletingBrand ||
+          isDeletingModel
+        }
+        isError={
+          isAddingBrandError ||
+          isAddingModelError ||
+          isEditingBrandError ||
+          isEditingModelError ||
+          isDeletingBrandError ||
+          isDeletingModelError
+        }
+        error={
+          addingBrandError?.message ||
+          addingModelError?.message ||
+          editingBrandError?.message ||
+          editingModelError?.message ||
+          deletingBrandError?.message ||
+          deletingModelError?.message
+        }
+        onReset={resetMutations}
+      >
+        {!isDeleting && (
+          <div className="mt-8">
+            <Input
+              onChange={(e) => setInputValue(e.target.value)}
+              value={inputValue}
+              className="mb-4"
+              placeholder={activeModal.placeholder ?? "Nombre"}
+            />
+          </div>
+        )}
+      </CrudModal>
+
       <div className="flex gap-10 justify-center">
-          <div className="w-full">
-              <StandardTable<marca>  addBtn={() => handleclick("addBrand")} isAddable={true} editBtn={(id) => handleclick("editBrand",id)} deleteBtn={(id) => handleclick("deleteBrand",id)} selectRowId={selectedBrandId} onRowSelect={onRowSelectedBrandId} columns={columnsMarcas} data={dataMarca} />
-          </div>
-          <div className="w-full">
-              <StandardTable<modelo> addBtn={() => handleclick("addModel")} isAddable={!!selectedBrandId} editBtn={(id) =>handleclick("editModel",id)} deleteBtn={(id) =>handleclick("deleteModel",id)}  selectRowId={selectedModelId} onRowSelect={onRowSelectedModelId} columns={columnsModelos} data={modelosFiltrados} />
-          </div>
+        <div className="w-full">
+          <StandardTable<marca>
+            addBtn={() => openResourceModal("addBrand")}
+            isAddable={true}
+            editBtn={(id) => openResourceModal("editBrand", id)}
+            deleteBtn={(id) => openResourceModal("deleteBrand", id)}
+            selectRowId={selectedBrandId}
+            onRowSelect={onRowSelectedBrandId}
+            columns={columnsMarcas}
+            data={dataMarca}
+          />
+        </div>
+        <div className="w-full">
+          <StandardTable<modelo>
+            addBtn={() => openResourceModal("addModel")}
+            isAddable={!!selectedBrandId}
+            editBtn={(id) => openResourceModal("editModel", id)}
+            deleteBtn={(id) => openResourceModal("deleteModel", id)}
+            selectRowId={selectedModelId}
+            onRowSelect={onRowSelectedModelId}
+            columns={columnsModelos}
+            data={modelosFiltrados}
+          />
+        </div>
       </div>
 
       <FetchAlert
@@ -272,4 +337,4 @@ export default function BrandsTable({ selectedModelId, onRowSelectedModelId, sel
       />
     </>
   );
-};
+}

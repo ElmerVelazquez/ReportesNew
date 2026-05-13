@@ -7,16 +7,22 @@ export function useResourceModal<TMode extends string>(initialMode: TMode) {
   const [modalMode, setModalMode] = useState<TMode>(initialMode);
   const [resourceId, setResourceId] = useState<string | null>(null);
 
-  const openEditor = (mode: TMode, id?: string | null) => {
+  const openResourceModal = (mode: TMode, id?: string | null) => {
     setModalMode(mode);
     setResourceId(id || null);
     openModal();
   };
 
-  const closeEditor = () => {
+  const closeResourceModal = () => {
     setResourceId(null);
     closeModal();
   };
 
-  return { isOpen, modalMode, resourceId, openEditor, closeEditor };
+  return {
+    isOpen,
+    modalMode,
+    resourceId,
+    openResourceModal,
+    closeResourceModal,
+  };
 }

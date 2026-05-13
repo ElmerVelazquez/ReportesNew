@@ -19,6 +19,7 @@ import AppLayout from "./layout/AppLayout";
 import { ScrollToTop } from "./components/common/ScrollToTop";
 import Home from "./pages/Dashboard/Home";
 import Equipments from "./pages/Equipments/Equipments";
+import Employees from "./pages/Employees/Employees";
 import Documents from "./pages/Documents";
 import Brands from "./pages/Equipments/Brands";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -42,6 +43,9 @@ export default function App() {
 
             {/* Equipments */}
             <Route path="/equipments" element={<Equipments />} />
+
+            {/* Employees */}
+            <Route path="/employees" element={<Employees />} />
 
             {/* Brands */}
             <Route path="/brands" element={<Brands />} />

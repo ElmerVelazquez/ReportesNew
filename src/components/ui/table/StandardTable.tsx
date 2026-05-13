@@ -100,10 +100,12 @@ export default function StandardTable<TData extends { id: number }>({columns, da
                                     <div>{flexRender(cell.column.columnDef.cell, cell.getContext())}</div>
                                 </td>
                             ))}
-                            <div className="flex justify-end items-center h-13 mr-3">
-                                {editBtn && <button onClick={() => editBtn(row.id)} className="text-blue-500 hover:text-blue-700"><EditIcon className="size-4" /></button>}
-                                {deleteBtn && <button onClick={() => deleteBtn(row.id)} className="text-red-500 hover:text-red-700 ml-2"><TrashBinIcon className="size-4" /></button>}
-                            </div>
+                            <td>
+                                <div className="flex justify-end items-center h-13 mr-3">
+                                    {editBtn && <button onClick={() => editBtn(row.id)} className="text-blue-500 hover:text-blue-700"><EditIcon className="size-4" /></button>}
+                                    {deleteBtn && <button onClick={() => deleteBtn(row.id)} className="text-red-500 hover:text-red-700 ml-2"><TrashBinIcon className="size-4" /></button>}
+                                </div>
+                            </td>
                         </tr>
                     ))}
                 </tbody>

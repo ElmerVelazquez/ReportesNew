@@ -14,6 +14,7 @@ import {
   PageIcon,
   PieChartIcon,
   PlugInIcon,
+  GroupIcon,
   TableIcon,
   UserCircleIcon,
 } from "../icons";
@@ -39,6 +40,11 @@ const navItems: NavItem[] = [
       { name: "List of Equipments", path: "/equipments", pro: false },
       { name: "Brands & Models", path: "/brands", pro: false }
     ],
+  },
+  {
+    icon: <GroupIcon />,
+    name: "Empleados",
+    path: "/employees",
   },
   {
     icon: <DocumentsIcon />,

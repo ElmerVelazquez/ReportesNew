@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
 import { Modal } from ".";
 import { FetchAlert } from "../alert/FetchAlert";
+import { Error } from "@/types";
 
 export type CrudModalTone = "add" | "edit" | "delete";
 
@@ -15,7 +16,7 @@ interface CrudModalProps {
   children?: ReactNode;
   isPending?: boolean;
   isError?: boolean;
-  error?: unknown;
+  error?: Error;
   onReset?: () => void;
   compact?: boolean;
 }

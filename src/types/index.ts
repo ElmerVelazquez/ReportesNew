@@ -94,3 +94,8 @@ export interface Registro {
   receptor: Employee,
   comment: string
 };
+
+export type Error = {
+  message: string;
+  code?: number;
+};

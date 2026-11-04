@@ -1,10 +1,11 @@
 import Alert from "@/components/ui/alert/Alert";
 import { motion, AnimatePresence } from "framer-motion";
+import {Error} from "@/types";
 
 interface ActionStatusProps {
   isPending: boolean;
   isError: boolean;
-  error?: any;
+  error?: Error;
   onReset: () => void;
   variant?: "inline" | "toast"; // Nueva prop para flexibilidad
 }
